@@ -3,13 +3,14 @@ import Navigation from '@/components/layout/Navigation';
 import ProgressStats from '@/components/progress/ProgressStats';
 import ProgressCalendar from '@/components/progress/ProgressCalendar';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { mockProblems, generateMockCompletionData } from '@/data/mockData';
+import { mockProblems } from '@/data/mockData';
+import { generateRealProgressData } from '@/utils/githubApi';
 import { DSAProblem, ProgressStats as IProgressStats } from '@/types/dsa';
 
 const Progress = () => {
   const [completedProblems] = useLocalStorage<Record<string, { completed: boolean; completedAt?: string }>>('dsa-progress', {});
   
-  const completionData = useMemo(() => generateMockCompletionData(), []);
+  const completionData = useMemo(() => generateRealProgressData(completedProblems), [completedProblems]);
   
   const stats: IProgressStats = useMemo(() => {
     const completed = Object.values(completedProblems).filter(p => p.completed).length;

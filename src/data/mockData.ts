@@ -1,4 +1,8 @@
 import { DSAProblem, Company } from '@/types/dsa';
+import { fetchCompaniesFromGitHub } from '@/utils/githubApi';
+
+// Cache for companies data
+let companiesCache: Company[] | null = null;
 
 // Mock data representing problems from different companies
 export const mockProblems: DSAProblem[] = [
@@ -94,16 +98,37 @@ export const mockProblems: DSAProblem[] = [
   }
 ];
 
-export const mockCompanies: Company[] = [
-  { name: 'Google', count: 2 },
-  { name: 'Amazon', count: 2 },
-  { name: 'Microsoft', count: 2 },
-  { name: 'Apple', count: 2 },
-  { name: 'Facebook', count: 2 },
-];
+export const getCompanies = async (): Promise<Company[]> => {
+  if (companiesCache) {
+    return companiesCache;
+  }
+  
+  try {
+    const companyNames = await fetchCompaniesFromGitHub();
+    companiesCache = companyNames.map(name => ({
+      name,
+      count: mockProblems.filter(p => p.company === name).length || 1 // Default count of 1 if no problems found
+    }));
+    return companiesCache;
+  } catch (error) {
+    console.error('Failed to fetch companies:', error);
+    // Fallback companies
+    return [
+      { name: 'Google', count: 2 },
+      { name: 'Amazon', count: 2 },
+      { name: 'Microsoft', count: 2 },
+      { name: 'Apple', count: 2 },
+      { name: 'Facebook', count: 2 },
+    ];
+  }
+};
 
-// Helper function to generate random completion data for the calendar
+// For backward compatibility - will be populated after first call to getCompanies
+export const mockCompanies: Company[] = [];
+
+// This function is deprecated - use generateRealProgressData from githubApi utils instead
 export const generateMockCompletionData = () => {
+  console.warn('generateMockCompletionData is deprecated. Use generateRealProgressData from githubApi utils.');
   const data = [];
   const today = new Date();
   

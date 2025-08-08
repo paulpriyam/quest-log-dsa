@@ -1,13 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Navigation from '@/components/layout/Navigation';
 import ProblemFilters from '@/components/problems/ProblemFilters';
 import ProblemList from '@/components/problems/ProblemList';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { mockProblems, mockCompanies } from '@/data/mockData';
-import { FilterOptions, DSAProblem } from '@/types/dsa';
+import { mockProblems, getCompanies } from '@/data/mockData';
+import { FilterOptions, DSAProblem, Company } from '@/types/dsa';
 
 const Problems = () => {
   const [completedProblems, setCompletedProblems] = useLocalStorage<Record<string, { completed: boolean; completedAt?: string }>>('dsa-progress', {});
+  const [companies, setCompanies] = useState<Company[]>([]);
   
   const [filters, setFilters] = useState<FilterOptions>({
     company: 'all',
@@ -15,6 +16,11 @@ const Problems = () => {
     duration: 'all',
     showCompleted: true
   });
+
+  // Load companies on component mount
+  useEffect(() => {
+    getCompanies().then(setCompanies);
+  }, []);
 
   const filteredProblems = useMemo(() => {
     let filtered = mockProblems.map(problem => ({
@@ -74,7 +80,7 @@ const Problems = () => {
 
         <ProblemFilters
           filters={filters}
-          companies={mockCompanies}
+          companies={companies}
           onFiltersChange={setFilters}
           onReset={handleResetFilters}
         />
